@@ -19,9 +19,11 @@ import firestore from "@react-native-firebase/firestore";
 import { Search } from "@src/components/Search";
 import { ProductCard, ProductData } from "@src/components/ProductCard";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useAuth } from "@src/hooks/auth";
 
 export function Home() {
   const { COLORS } = useTheme();
+  const { logout, user } = useAuth();
   const [pizzas, setPizzas] = useState<ProductData[]>([]);
   const [search, setSearch] = useState("");
   const navigation = useNavigation();
@@ -66,7 +68,8 @@ export function Home() {
   }
 
   function handleOpen(id: string) {
-    navigation.navigate("product", { id });
+    const route = user?.isAdmin ? "product" : "order";
+    navigation.navigate(route, { id });
   }
 
   function handleAddButton() {
@@ -80,7 +83,7 @@ export function Home() {
           <GreetingEmoji source={happyIcon} />
           <GreetingText>Ola NOME</GreetingText>
         </Greeting>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={logout}>
           <MaterialIcons name="logout" color={COLORS.TITLE} size={24} />
         </TouchableOpacity>
       </Header>
@@ -109,11 +112,13 @@ export function Home() {
           marginHorizontal: 24,
         }}
       />
-      <NewProductButton
-        title="Cadastrar Pizza"
-        type="secondary"
-        onPress={handleAddButton}
-      />
+      {user?.isAdmin && (
+        <NewProductButton
+          title="Cadastrar Pizza"
+          type="secondary"
+          onPress={handleAddButton}
+        />
+      )}
     </Container>
   );
 }
